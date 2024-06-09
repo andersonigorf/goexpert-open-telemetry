@@ -1,0 +1,45 @@
+services:
+  zipkin-all-in-one:
+    image: openzipkin/zipkin:latest
+    restart: always
+    ports:
+      - "9411:9411"
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./.docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "55679:55679"
+      - "4317:4317"
+
+  goapp-zipcode:
+    build:
+      context: ./zip_code
+    ports:
+      - "8080:8080"
+    environment:
+      - OTEL_SERVICE_NAME=goapp-zipcode
+      - REQUEST_NAME_OTEL=goapp-zipcode-request
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://zipkin-all-in-one:9411/api/v2/spans
+      - HTTP_PORT=:8080
+    depends_on:
+      - otel-collector
+
+  goapp-weather:
+    build:
+      context: ./weather
+    ports:
+      - "8181:8080"
+    environment:
+      - OTEL_SERVICE_NAME=goapp-weather
+      - REQUEST_NAME_OTEL=goapp-weather-request
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://zipkin-all-in-one:9411/api/v2/spans
+      - WEATHER_API_KEY=8b8a8316aa174cf681c175307240306
+      - HTTP_PORT=:8181
+    depends_on:
+      - otel-collector

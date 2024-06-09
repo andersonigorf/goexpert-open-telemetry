@@ -1,0 +1,35 @@
+### HTTP: 200
+POST http://localhost:8080/weather
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "cep": "29902555"
+}
+
+### HTTP: 200
+POST http://localhost:8080/weather
+Host: localhost:8080
+Content-Type: application/json
+
+{
+"cep": "72547240"
+}
+
+### HTTP: 422
+POST http://localhost:8080/weather
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "cep": "72547"
+}
+
+### HTTP: 404
+POST http://localhost:8080/weather
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "cep": "72547249"
+}
